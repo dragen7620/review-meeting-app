@@ -103,4 +103,65 @@ export default function Home() {
           <h3 style={{ margin: '0 0 12px 0', color: '#92400e', fontSize: '16px' }}>🎉 產出結果：</h3>
           
           {resultLinks.url && (
-            <p style={{ margin: '8px 0
+            <p style={{ margin: '8px 0' }}>
+              <a href={resultLinks.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '16px', textDecoration: 'underline' }}>
+                👉 點此開啟已產出的 Docs 議程文件
+              </a>
+            </p>
+          )}
+
+          {resultLinks.formUrl && (
+            <p style={{ margin: '8px 0' }}>
+              <a href={resultLinks.formUrl} target="_blank" rel="noreferrer" style={{ color: '#059669', fontWeight: 'bold', fontSize: '16px', textDecoration: 'underline' }}>
+                👉 點此開啟受審單位填報表單
+              </a>
+            </p>
+          )}
+
+          {resultLinks.sheets && (
+            <div style={{ marginTop: '8px' }}>
+              <span style={{ fontWeight: 'bold', color: '#4b5563' }}>委員專屬審查表清單：</span>
+              {resultLinks.sheets.map((s, i) => (
+                <p key={i} style={{ margin: '6px 0 6px 12px' }}>
+                  <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
+                    👉 {s.reviewer} 專屬審查表
+                  </a>
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+        <h3 style={{ margin: '0 0 12px 0' }}>當前排程案件清單（即時同步試算表）</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid #e5e7eb', color: '#6b7280' }}>
+              <th style={{ padding: '8px' }}>編號</th>
+              <th style={{ padding: '8px' }}>總計畫</th>
+              <th style={{ padding: '8px' }}>細部計畫</th>
+              <th style={{ padding: '8px' }}>單位</th>
+              <th style={{ padding: '8px' }}>經費(千元)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {projects.length === 0 ? (
+              <tr><td colSpan="5" style={{ padding: '16px', textAlign: 'center', color: '#9ca3af' }}>目前無排程案件資料</td></tr>
+            ) : (
+              projects.map((p, idx) => (
+                <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
+                  <td style={{ padding: '8px', fontWeight: 'bold' }}>{p.caseId}</td>
+                  <td style={{ padding: '8px' }}>{p.mainTitle}</td>
+                  <td style={{ padding: '8px' }}>{p.subTitle}</td>
+                  <td style={{ padding: '8px' }}>{p.unit}</td>
+                  <td style={{ padding: '8px' }}>{p.budget?.toLocaleString()}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
