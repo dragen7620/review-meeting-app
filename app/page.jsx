@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
-// 請確認為最新 Apps Script Web App URL
+// 請確認為最新發布的 Apps Script Web App URL
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz12K5cJwuNMUnhF_DWlE6STZ39wNbldq7TUWv7zEjjeTfiHK3qpsoA7RwVfHVfEeHP/exec";
 
 export default function Home() {
@@ -11,6 +11,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('');
   const [resultLinks, setResultLinks] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -31,8 +32,8 @@ export default function Home() {
 
   const handleTrigger = async (action, actionLabel) => {
     setLoading(true);
-    setLoadingText(`正在執行「${actionLabel}」，需時約 10~20 秒，請稍候...`);
-    setResultLinks(null);
+    setLoadingText(`正在執行「${actionLabel}」，系統處理中，請稍候...`);
+    setCopied(false);
 
     try {
       const res = await fetch(GAS_API_URL, {
@@ -52,15 +53,26 @@ export default function Home() {
       }
 
       if (data.status === 'error') {
-        alert("執行失敗，後端回報錯誤：\n" + data.message);
+        alert("執行失敗：\n" + data.message);
       } else {
         setResultLinks(data);
       }
     } catch (e) {
-      alert("請求失敗：\n" + e.message + "\n\n若此功能涉及新建多份試算表，請確認 Apps Script 已先手動執行授權。");
+      alert("請求失敗：\n" + e.message);
     } finally {
       setLoading(false);
     }
+  };
+
+  // 快速複製表單連結至剪貼簿
+  const copyFormLink = (url) => {
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    }).catch(err => {
+      prompt("請手動按 Ctrl+C 複製表單網址：", url);
+    });
   };
 
   return (
@@ -74,7 +86,7 @@ export default function Home() {
           line-height: 1.6;
         }
         .main-wrapper { min-height: 100vh; padding: 40px 20px; display: flex; justify-content: center; }
-        .container { max-width: 960px; width: 100%; }
+        .container { max-width: 980px; width: 100%; }
         .hero-banner {
           background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
           border-radius: 20px;
@@ -132,22 +144,22 @@ export default function Home() {
         }
         .btn-group {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-          gap: 16px;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 14px;
           margin-bottom: 24px;
         }
         .btn {
-          padding: 18px 20px;
+          padding: 16px 18px;
           border: none;
           border-radius: 14px;
           cursor: pointer;
           color: #ffffff;
-          font-size: 15px;
+          font-size: 14.5px;
           font-weight: 700;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
+          gap: 8px;
           box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
           transition: transform 0.2s ease;
         }
@@ -155,6 +167,7 @@ export default function Home() {
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-agenda { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); }
         .btn-attendance { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+        .btn-signin { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
         .btn-review { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); }
         .loading-bar {
           background: #ffffff;
@@ -197,8 +210,20 @@ export default function Home() {
           text-decoration: none;
           font-weight: 600;
           font-size: 14px;
-          margin: 4px 0;
+          margin: 4px 6px 4px 0;
         }
+        .copy-btn {
+          background: #059669;
+          color: #ffffff;
+          border: none;
+          padding: 9px 14px;
+          border-radius: 8px;
+          font-weight: 700;
+          cursor: pointer;
+          font-size: 13px;
+          transition: background 0.2s;
+        }
+        .copy-btn:hover { background: #047857; }
         .sheets-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -248,26 +273,34 @@ export default function Home() {
           </div>
         )}
 
+        {/* 核心操作按鈕群組 (新增「產出會議簽到單」) */}
         <div className="btn-group">
           <button 
-            onClick={() => handleTrigger('GENERATE_AGENDA', '產出 Docs 議程')} 
+            onClick={() => handleTrigger('GENERATE_AGENDA', '產出開會通知單')} 
             disabled={loading}
             className="btn btn-agenda">
-            <span>📄</span> 一鍵生成會議議程 (Docs)
+            <span>📄</span> 1. 生成會議議程 (Docs)
           </button>
 
           <button 
-            onClick={() => handleTrigger('GENERATE_ATTENDANCE_FORM', '建立出席名單表單')} 
+            onClick={() => handleTrigger('GENERATE_ATTENDANCE_FORM', '建立受審單位填報表單')} 
             disabled={loading}
             className="btn btn-attendance">
-            <span>📋</span> 一鍵生成出席名單表 (Forms)
+            <span>📋</span> 2. 生成出席填報表 (Forms)
+          </button>
+
+          <button 
+            onClick={() => handleTrigger('GENERATE_SIGNIN_SHEET', '讀取表單彙整簽到單')} 
+            disabled={loading}
+            className="btn btn-signin">
+            <span>🖨️</span> 3. 產出會議簽到單 (Docs)
           </button>
 
           <button 
             onClick={() => handleTrigger('GENERATE_REVIEW_SHEETS', '裂變委員專屬審查表')} 
             disabled={loading}
             className="btn btn-review">
-            <span>📊</span> 裂變委員專屬審查表 (Sheets)
+            <span>📊</span> 4. 裂變委員審查表 (Sheets)
           </button>
         </div>
 
@@ -278,22 +311,34 @@ export default function Home() {
           </div>
         )}
 
+        {/* 產出成果超連結與複製專區 */}
         {resultLinks && (
           <div className="results-box">
             <div className="results-header">🎉 雲端文件已產出就緒：</div>
 
             {resultLinks.url && (
-              <div>
+              <div style={{ marginBottom: '8px' }}>
                 <a href={resultLinks.url} target="_blank" rel="noreferrer" className="result-link-btn">
-                  📄 開啟已產出的 Docs 議程文件 ↗
+                  📄 開啟已產出的 Docs 開會通知單 ↗
                 </a>
               </div>
             )}
 
             {resultLinks.formUrl && (
-              <div>
+              <div style={{ margin: '8px 0', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                 <a href={resultLinks.formUrl} target="_blank" rel="noreferrer" className="result-link-btn" style={{ color: '#047857' }}>
                   📋 開啟受審單位出席填報表單 ↗
+                </a>
+                <button onClick={() => copyFormLink(resultLinks.formUrl)} className="copy-btn">
+                  {copied ? '✅ 已複製連結！' : '📋 複製表單網址轉寄'}
+                </button>
+              </div>
+            )}
+
+            {resultLinks.signInUrl && (
+              <div style={{ margin: '8px 0' }}>
+                <a href={resultLinks.signInUrl} target="_blank" rel="noreferrer" className="result-link-btn" style={{ color: '#0284c7' }}>
+                  🖨️ 開啟【現場出席簽到單】(已彙整 {resultLinks.attendeeCount} 位出席代表) ↗
                 </a>
               </div>
             )}
@@ -313,6 +358,7 @@ export default function Home() {
           </div>
         )}
 
+        {/* 即時主檔表格卡片 */}
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
             <h3 style={{ fontSize: '16px', fontWeight: '700' }}>當前排程案件清單</h3>
