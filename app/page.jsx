@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 
+// 請確認此網址為 Apps Script 最新發布的「網頁應用程式」網址
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz12K5cJwuNMUnhF_DWlE6STZ39wNbldq7TUWv7zEjjeTfiHK3qpsoA7RwVfHVfEeHP/exec";
 
 export default function Home() {
@@ -18,7 +19,7 @@ export default function Home() {
       setConfig(data.config);
       setProjects(data.projects || []);
     } catch (e) {
-      alert("載入試算表資料失敗，請確認 API 網址與試算表權限！");
+      alert("載入試算表資料失敗！\n1. 請確認 Google 試算表右上角「共用」設為「知道連結的任何人」。\n2. 請確認 Apps Script 部署作業存取權限設為「所有人」。");
     }
     setLoading(false);
   };
@@ -53,7 +54,7 @@ export default function Home() {
         setResultLinks(data);
       }
     } catch (e) {
-      alert('請求中斷或失敗：' + e.message + '\n\n請確認 Apps Script 部署版本是否為最新，且存取權限設為「所有人」。');
+      alert('請求失敗：' + e.message);
     }
     setLoading(false);
   };
@@ -65,13 +66,27 @@ export default function Home() {
         <p style={{ color: '#666' }}>Single Source of Truth 雲端全自動化工作站</p>
       </header>
 
+      {/* 會議基本資料卡片 */}
       {config && (
-        <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #e5e7eb' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0' }}>{config.title}</h2>
-          <p style={{ margin: '4px 0', color: '#4b5563' }}>📅 日期：{config.date} ｜ ⏰ 時間：{config.startTime} ｜ 📍 地點：{config.location}</p>
+        <div style={{ background: '#fff', padding: '18px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', color: '#1f2937' }}>{config.title}</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '8px', fontSize: '14px', color: '#4b5563' }}>
+            <p style={{ margin: '2px 0' }}>📅 <strong>日期：</strong>{config.date}</p>
+            <p style={{ margin: '2px 0' }}>⏰ <strong>時間：</strong>{config.startTime}</p>
+            <p style={{ margin: '2px 0' }}>📍 <strong>地點：</strong>{config.location}</p>
+            <p style={{ margin: '2px 0' }}>👤 <strong>主持人：</strong>{config.host}</p>
+            <p style={{ margin: '2px 0' }}>📞 <strong>聯絡人：</strong>{config.contact}</p>
+            <p style={{ margin: '2px 0' }}>👥 <strong>每案出席上限：</strong>{config.maxAttendees} 人</p>
+          </div>
+          {config.notes && config.notes !== "無" && (
+            <p style={{ margin: '10px 0 0 0', fontSize: '13px', color: '#6b7280', borderTop: '1px dashed #e5e7eb', paddingTop: '8px' }}>
+              📝 <strong>備註事項：</strong>{config.notes}
+            </p>
+          )}
         </div>
       )}
 
+      {/* 功能按鈕 */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '24px' }}>
         <button 
           onClick={() => handleTrigger('GENERATE_AGENDA')} 
@@ -133,6 +148,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* 案件清單表格 */}
       <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
         <h3 style={{ margin: '0 0 12px 0' }}>當前排程案件清單（即時同步試算表）</h3>
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
