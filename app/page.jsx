@@ -64,7 +64,6 @@ export default function Home() {
     }
   };
 
-  // 快速複製表單連結至剪貼簿
   const copyFormLink = (url) => {
     if (!url) return;
     navigator.clipboard.writeText(url).then(() => {
@@ -273,7 +272,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* 核心操作按鈕群組 (新增「產出會議簽到單」) */}
+        {/* 核心操作 4 大按鈕 */}
         <div className="btn-group">
           <button 
             onClick={() => handleTrigger('GENERATE_AGENDA', '產出開會通知單')} 
@@ -301,100 +300,4 @@ export default function Home() {
             disabled={loading}
             className="btn btn-review">
             <span>📊</span> 4. 裂變委員審查表 (Sheets)
-          </button>
-        </div>
-
-        {loading && (
-          <div className="loading-bar">
-            <div className="spinner"></div>
-            <span>{loadingText}</span>
-          </div>
-        )}
-
-        {/* 產出成果超連結與複製專區 */}
-        {resultLinks && (
-          <div className="results-box">
-            <div className="results-header">🎉 雲端文件已產出就緒：</div>
-
-            {resultLinks.url && (
-              <div style={{ marginBottom: '8px' }}>
-                <a href={resultLinks.url} target="_blank" rel="noreferrer" className="result-link-btn">
-                  📄 開啟已產出的 Docs 開會通知單 ↗
-                </a>
-              </div>
-            )}
-
-            {resultLinks.formUrl && (
-              <div style={{ margin: '8px 0', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                <a href={resultLinks.formUrl} target="_blank" rel="noreferrer" className="result-link-btn" style={{ color: '#047857' }}>
-                  📋 開啟受審單位出席填報表單 ↗
-                </a>
-                <button onClick={() => copyFormLink(resultLinks.formUrl)} className="copy-btn">
-                  {copied ? '✅ 已複製連結！' : '📋 複製表單網址轉寄'}
-                </button>
-              </div>
-            )}
-
-            {resultLinks.signInUrl && (
-              <div style={{ margin: '8px 0' }}>
-                <a href={resultLinks.signInUrl} target="_blank" rel="noreferrer" className="result-link-btn" style={{ color: '#0284c7' }}>
-                  🖨️ 開啟【現場出席簽到單】(已彙整 {resultLinks.attendeeCount} 位出席代表) ↗
-                </a>
-              </div>
-            )}
-
-            {resultLinks.sheets && (
-              <div style={{ marginTop: '12px' }}>
-                <p style={{ fontSize: '13px', fontWeight: 'bold', color: '#64748b', marginBottom: '6px' }}>各委員專屬獨立審查表：</p>
-                <div className="sheets-grid">
-                  {resultLinks.sheets.map((s, i) => (
-                    <a key={i} href={s.url} target="_blank" rel="noreferrer" className="result-link-btn" style={{ color: '#4338ca', fontSize: '13px' }}>
-                      📊 {s.reviewer} 審查表 ↗
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* 即時主檔表格卡片 */}
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <h3 style={{ fontSize: '16px', fontWeight: '700' }}>當前排程案件清單</h3>
-            <span style={{ fontSize: '12px', color: '#64748b' }}>共 {projects.length} 件排程審查案</span>
-          </div>
-
-          <div className="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th style={{ width: '80px' }}>編號</th>
-                  <th>總計畫名稱</th>
-                  <th>細部計畫名稱</th>
-                  <th>執行單位</th>
-                  <th style={{ textAlign: 'right' }}>經費 (千元)</th>
-                </tr>
-              </thead>
-              <tbody>
-                {projects.length === 0 ? (
-                  <tr><td colSpan="5" style={{ padding: '32px', textAlign: 'center', color: '#94a3b8' }}>尚無資料</td></tr>
-                ) : (
-                  projects.map((p, idx) => (
-                    <tr key={idx}>
-                      <td><span className="badge-id">{p.caseId}</span></td>
-                      <td style={{ fontWeight: '500' }}>{p.mainTitle}</td>
-                      <td style={{ color: '#0284c7', fontWeight: '500' }}>{p.subTitle}</td>
-                      <td><span className="badge-unit">{p.unit}</span></td>
-                      <td className="budget-cell">{p.budget?.toLocaleString()}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+          </
