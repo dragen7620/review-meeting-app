@@ -16,12 +16,12 @@ export default function Home() {
     try {
       const res = await fetch(GAS_API_URL, { method: 'GET' });
       const data = await res.json();
-      if (data.config) {
+      if (data && data.config) {
         setConfig(data.config);
         setProjects(data.projects || []);
       }
     } catch (e) {
-      console.error("載入試算表失敗：", e);
+      console.error("載入失敗：", e);
     }
   };
 
@@ -31,7 +31,7 @@ export default function Home() {
 
   const handleTrigger = async (action, actionLabel) => {
     setLoading(true);
-    setLoadingText(`正在執行「${actionLabel}」，系統處理中，請稍候...`);
+    setLoadingText("正在執行「" + actionLabel + "」，系統處理中...");
     setCopied(false);
 
     try {
@@ -48,16 +48,16 @@ export default function Home() {
       try {
         data = JSON.parse(text);
       } catch (err) {
-        throw new Error("伺服器回傳格式異常：" + text.substring(0, 150));
+        throw new Error("回傳格式異常：" + text.substring(0, 100));
       }
 
       if (data.status === 'error') {
-        alert("執行失敗：\n" + data.message);
+        alert("執行失敗：" + data.message);
       } else {
         setResultLinks(data);
       }
     } catch (e) {
-      alert("請求失敗：\n" + e.message);
+      alert("請求失敗：" + e.message);
     } finally {
       setLoading(false);
     }
@@ -78,10 +78,10 @@ export default function Home() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f1f5f9', padding: '40px 20px', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', color: '#1e293b' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f1f5f9', padding: '40px 20px', fontFamily: 'system-ui, sans-serif', color: '#1e293b' }}>
       <div style={{ maxWidth: '980px', margin: '0 auto' }}>
         
-        {/* 頂部深藍科技橫幅 */}
+        {/* 頂部科技橫幅 */}
         <header style={{
           background: 'linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%)',
           borderRadius: '20px',
@@ -157,27 +157,4 @@ export default function Home() {
 
         {/* 成果產出與複製專區 */}
         {resultLinks && (
-          <div style={{ background: 'linear-gradient(to right bottom, #fffbeb, #fef3c7)', border: '1px solid #fde68a', borderRadius: '16px', padding: '24px', marginBottom: '24px' }}>
-            <div style={{ fontSize: '16px', fontWeight: '700', color: '#92400e', marginBottom: '14px' }}>🎉 雲端文件已產出就緒：</div>
-
-            {resultLinks.url && (
-              <div style={{ marginBottom: '8px' }}>
-                <a href={resultLinks.url} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', background: '#ffffff', padding: '10px 18px', borderRadius: '8px', border: '1px solid #fde68a', color: '#1e40af', textDecoration: 'none', fontWeight: '600', fontSize: '14px' }}>
-                  📄 開啟已產出的 Docs 開會通知單 ↗
-                </a>
-              </div>
-            )}
-
-            {resultLinks.formUrl && (
-              <div style={{ margin: '8px 0', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                <a href={resultLinks.formUrl} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', background: '#ffffff', padding: '10px 18px', borderRadius: '8px', border: '1px solid #fde68a', color: '#047857', textDecoration: 'none', fontWeight: '600', fontSize: '14px' }}>
-                  📋 開啟受審單位出席填報表單 ↗
-                </a>
-                <button onClick={() => copyFormLink(resultLinks.formUrl)} style={{ background: '#059669', color: '#ffffff', border: 'none', padding: '9px 14px', borderRadius: '8px', fontWeight: '700', cursor: 'pointer', fontSize: '13px' }}>
-                  {copied ? '✅ 已複製連結！' : '📋 複製表單網址轉寄'}
-                </button>
-              </div>
-            )}
-
-            {resultLinks.signInUrl && (
-              <div style={{ margin: '8px 0' }}>
+          <div style={{ background: 'linear-gradient(to right bottom, #fffbeb, #fef3c7)', border: '1px solid #fde68a', borderRadius: '16px', padding: '24px', marginBottom: '
