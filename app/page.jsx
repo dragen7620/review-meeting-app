@@ -2,17 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 
-// 請確認此網址為 Apps Script 最新發布的「網頁應用程式」網址
+// 請確認此處為您 Apps Script 最新發布的 Web App URL
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbz12K5cJwuNMUnhF_DWlE6STZ39wNbldq7TUWv7zEjjeTfiHK3qpsoA7RwVfHVfEeHP/exec";
 
 export default function Home() {
   const [config, setConfig] = useState(null);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState('');
   const [resultLinks, setResultLinks] = useState(null);
 
   const fetchData = async () => {
     setLoading(true);
+    setLoadingText('正在即時同步試算表會議資料...');
     try {
       const res = await fetch(GAS_API_URL);
       const data = await res.json();
@@ -28,8 +30,9 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const handleTrigger = async (action) => {
+  const handleTrigger = async (action, actionLabel) => {
     setLoading(true);
+    setLoadingText(`正在進行「${actionLabel}」，系統自動處理中，請稍候...`);
     setResultLinks(null);
     try {
       const res = await fetch(GAS_API_URL, {
@@ -60,124 +63,247 @@ export default function Home() {
   };
 
   return (
-    <div style={{ padding: '30px', fontFamily: 'sans-serif', maxWidth: '850px', margin: '0 auto', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
-      <header style={{ marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>審查會議資料自動化系統</h1>
-        <p style={{ color: '#666' }}>Single Source of Truth 雲端全自動化工作站</p>
-      </header>
+    <div className="main-wrapper">
+      <style jsx global>{`
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+        body {
+          background-color: #f1f5f9;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang TC", "Microsoft JhengHei", sans-serif;
+          color: #1e293b;
+          line-height: 1.6;
+        }
+        .main-wrapper {
+          min-height: 100vh;
+          padding: 40px 20px;
+          display: flex;
+          justify-content: center;
+        }
+        .container {
+          max-width: 960px;
+          width: 100%;
+        }
+        
+        /* 標題橫幅 Header */
+        .hero-banner {
+          background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #2563eb 100%);
+          border-radius: 20px;
+          padding: 36px 32px;
+          color: #ffffff;
+          box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.25);
+          margin-bottom: 24px;
+          position: relative;
+          overflow: hidden;
+        }
+        .hero-banner::after {
+          content: "";
+          position: absolute;
+          top: -40px;
+          right: -40px;
+          width: 220px;
+          height: 220px;
+          background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%);
+          border-radius: 50%;
+        }
+        .hero-title {
+          font-size: 28px;
+          font-weight: 800;
+          letter-spacing: -0.5px;
+          margin-bottom: 6px;
+        }
+        .hero-desc {
+          font-size: 14px;
+          color: #93c5fd;
+          letter-spacing: 0.5px;
+        }
 
-      {/* 會議基本資料卡片 */}
-      {config && (
-        <div style={{ background: '#fff', padding: '18px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: '0 0 10px 0', color: '#1f2937' }}>{config.title}</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '8px', fontSize: '14px', color: '#4b5563' }}>
-            <p style={{ margin: '2px 0' }}>📅 <strong>日期：</strong>{config.date}</p>
-            <p style={{ margin: '2px 0' }}>⏰ <strong>時間：</strong>{config.startTime}</p>
-            <p style={{ margin: '2px 0' }}>📍 <strong>地點：</strong>{config.location}</p>
-            <p style={{ margin: '2px 0' }}>👤 <strong>主持人：</strong>{config.host}</p>
-            <p style={{ margin: '2px 0' }}>📞 <strong>聯絡人：</strong>{config.contact}</p>
-            <p style={{ margin: '2px 0' }}>👥 <strong>每案出席上限：</strong>{config.maxAttendees} 人</p>
-          </div>
-          {config.notes && config.notes !== "無" && (
-            <p style={{ margin: '10px 0 0 0', fontSize: '13px', color: '#6b7280', borderTop: '1px dashed #e5e7eb', paddingTop: '8px' }}>
-              📝 <strong>備註事項：</strong>{config.notes}
-            </p>
-          )}
-        </div>
-      )}
+        /* 資訊卡片 Card */
+        .card {
+          background: #ffffff;
+          border-radius: 16px;
+          padding: 24px;
+          border: 1px solid #e2e8f0;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+          margin-bottom: 24px;
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06);
+        }
+        .card-header-tag {
+          display: inline-block;
+          font-size: 11px;
+          font-weight: 700;
+          color: #2563eb;
+          background: #eff6ff;
+          padding: 4px 10px;
+          border-radius: 9999px;
+          margin-bottom: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.8px;
+        }
+        .card-title {
+          font-size: 20px;
+          font-weight: 700;
+          color: #0f172a;
+          margin-bottom: 16px;
+        }
 
-      {/* 功能按鈕 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', marginBottom: '24px' }}>
-        <button 
-          onClick={() => handleTrigger('GENERATE_AGENDA')} 
-          disabled={loading}
-          style={{ padding: '15px', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
-          📄 1. 一鍵生成會議議程 (Docs)
-        </button>
+        /* 會議參數網格 */
+        .info-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 14px;
+          font-size: 14px;
+        }
+        .info-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          color: #475569;
+          background: #f8fafc;
+          padding: 10px 14px;
+          border-radius: 10px;
+          border: 1px solid #f1f5f9;
+        }
+        .info-item span.label {
+          color: #64748b;
+          font-size: 13px;
+        }
+        .info-item span.value {
+          font-weight: 600;
+          color: #1e293b;
+        }
+        .notes-box {
+          margin-top: 14px;
+          padding: 12px 14px;
+          background: #fefce8;
+          border-left: 4px solid #f59e0b;
+          border-radius: 6px;
+          font-size: 13px;
+          color: #92400e;
+        }
 
-        <button 
-          onClick={() => handleTrigger('GENERATE_ATTENDANCE_FORM')} 
-          disabled={loading}
-          style={{ padding: '15px', background: '#059669', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
-          📋 2. 一鍵生成出席名單表 (Forms)
-        </button>
+        /* 動作按鈕 Action Buttons */
+        .btn-group {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+        .btn {
+          padding: 18px 20px;
+          border: none;
+          border-radius: 14px;
+          cursor: pointer;
+          color: #ffffff;
+          font-size: 15px;
+          font-weight: 700;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .btn:hover:not(:disabled) {
+          transform: translateY(-3px);
+          box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.15);
+        }
+        .btn:active:not(:disabled) {
+          transform: translateY(0);
+        }
+        .btn:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+          filter: grayscale(40%);
+        }
+        .btn-agenda {
+          background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        }
+        .btn-attendance {
+          background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        }
+        .btn-review {
+          background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        }
 
-        <button 
-          onClick={() => handleTrigger('GENERATE_REVIEW_SHEETS')} 
-          disabled={loading}
-          style={{ padding: '15px', background: '#4f46e5', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
-          📊 3. 裂變委員專屬審查表 (Sheets)
-        </button>
-      </div>
+        /* 處理中 Loading 提示條 */
+        .loading-bar {
+          background: #ffffff;
+          border: 1px solid #bfdbfe;
+          border-radius: 12px;
+          padding: 14px 20px;
+          margin-bottom: 24px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          color: #1d4ed8;
+          font-weight: 600;
+          font-size: 14px;
+          animation: pulse 2s infinite ease-in-out;
+        }
+        .spinner {
+          width: 18px;
+          height: 18px;
+          border: 3px solid #bfdbfe;
+          border-top-color: #2563eb;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
 
-      {loading && <p style={{ color: '#2563eb', fontWeight: 'bold', padding: '10px' }}>⏳ 系統正在處理雲端文件，請稍候 5~10 秒...</p>}
+        /* 成果展示 Results */
+        .results-box {
+          background: linear-gradient(to right bottom, #fffbeb, #fef3c7);
+          border: 1px solid #fde68a;
+          border-radius: 16px;
+          padding: 24px;
+          margin-bottom: 24px;
+          box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);
+        }
+        .results-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 16px;
+          font-weight: 700;
+          color: #92400e;
+          margin-bottom: 14px;
+        }
+        .result-link-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          background: #ffffff;
+          padding: 10px 18px;
+          border-radius: 8px;
+          border: 1px solid #fde68a;
+          color: #1e40af;
+          text-decoration: none;
+          font-weight: 600;
+          font-size: 14px;
+          margin: 4px 0;
+          transition: all 0.2s ease;
+        }
+        .result-link-btn:hover {
+          background: #eff6ff;
+          border-color: #93c5fd;
+          transform: translateX(4px);
+        }
+        .sheets-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+          gap: 10px;
+          margin-top: 10px;
+        }
 
-      {/* 產出結果區塊 */}
-      {resultLinks && (
-        <div style={{ background: '#fef3c7', padding: '18px', borderRadius: '8px', border: '1px solid #fde68a', marginBottom: '20px' }}>
-          <h3 style={{ margin: '0 0 12px 0', color: '#92400e', fontSize: '16px' }}>🎉 產出結果：</h3>
-          
-          {resultLinks.url && (
-            <p style={{ margin: '8px 0' }}>
-              <a href={resultLinks.url} target="_blank" rel="noreferrer" style={{ color: '#2563eb', fontWeight: 'bold', fontSize: '16px', textDecoration: 'underline' }}>
-                👉 點此開啟已產出的 Docs 議程文件
-              </a>
-            </p>
-          )}
-
-          {resultLinks.formUrl && (
-            <p style={{ margin: '8px 0' }}>
-              <a href={resultLinks.formUrl} target="_blank" rel="noreferrer" style={{ color: '#059669', fontWeight: 'bold', fontSize: '16px', textDecoration: 'underline' }}>
-                👉 點此開啟受審單位填報表單
-              </a>
-            </p>
-          )}
-
-          {resultLinks.sheets && (
-            <div style={{ marginTop: '8px' }}>
-              <span style={{ fontWeight: 'bold', color: '#4b5563' }}>委員專屬審查表清單：</span>
-              {resultLinks.sheets.map((s, i) => (
-                <p key={i} style={{ margin: '6px 0 6px 12px' }}>
-                  <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#4f46e5', textDecoration: 'underline' }}>
-                    👉 {s.reviewer} 專屬審查表
-                  </a>
-                </p>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* 案件清單表格 */}
-      <div style={{ background: '#fff', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
-        <h3 style={{ margin: '0 0 12px 0' }}>當前排程案件清單（即時同步試算表）</h3>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #e5e7eb', color: '#6b7280' }}>
-              <th style={{ padding: '8px' }}>編號</th>
-              <th style={{ padding: '8px' }}>總計畫</th>
-              <th style={{ padding: '8px' }}>細部計畫</th>
-              <th style={{ padding: '8px' }}>單位</th>
-              <th style={{ padding: '8px' }}>經費(千元)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.length === 0 ? (
-              <tr><td colSpan="5" style={{ padding: '16px', textAlign: 'center', color: '#9ca3af' }}>目前無排程案件資料</td></tr>
-            ) : (
-              projects.map((p, idx) => (
-                <tr key={idx} style={{ borderBottom: '1px solid #f3f4f6' }}>
-                  <td style={{ padding: '8px', fontWeight: 'bold' }}>{p.caseId}</td>
-                  <td style={{ padding: '8px' }}>{p.mainTitle}</td>
-                  <td style={{ padding: '8px' }}>{p.subTitle}</td>
-                  <td style={{ padding: '8px' }}>{p.unit}</td>
-                  <td style={{ padding: '8px' }}>{p.budget?.toLocaleString()}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+        /* 資料表格 Table */
+        .table-container {
+          overflow-x: auto;
+          margin-top: 12px;
+        }
+        table {
+          width:
